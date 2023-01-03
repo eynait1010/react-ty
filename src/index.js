@@ -1,5 +1,5 @@
-import react from "react";
-import second from "react-dom";
+import React from "./react";
+import ReactDOM from "./react-dom";
 
 let element = (
   <div className="title" style={{ color: "red" }}>

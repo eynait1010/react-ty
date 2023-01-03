@@ -1,0 +1,2 @@
+- Array.prototype.slice.call(arguments, 2) 写成了  Array.prototype.slice(arguments, 2)
+- typeof props.children === "object" 写成了 props.children === "object"
