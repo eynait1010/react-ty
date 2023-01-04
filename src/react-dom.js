@@ -7,11 +7,18 @@ function mount(vdom, container) {
 function render(vdom, container) {
   mount(vdom, container);
 }
+/**
+ *
+ * @param {*} vdom 虚拟dom
+ * @returns 真实dom
+ */
 function createDom(vdom) {
   const { type, props } = vdom;
   let dom;
   if (type === REACT_TEXT) {
     dom = document.createTextNode(props);
+  } else if (typeof type === "function") {
+    return mountFunctionComponent(vdom);
   } else {
     dom = document.createElement(type);
   }
@@ -26,6 +33,13 @@ function createDom(vdom) {
   vdom.dom = dom;
   return dom;
 }
+
+function mountFunctionComponent(vdom) {
+  const { type, props } = vdom;
+  const renderVdom = type(props);
+  return createDom(renderVdom);
+}
+
 function updateProps(dom, oldProps = {}, newProps = {}) {
   for (let key in newProps) {
     if (key === "children") {
