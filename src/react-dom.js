@@ -40,6 +40,7 @@ function createDom(vdom) {
 function mountFunctionComponent(vdom) {
   const { type, props } = vdom;
   const renderVdom = type(props);
+  vdom.oldRenderVDom = renderVdom;
   return createDom(renderVdom);
 }
 
@@ -47,6 +48,7 @@ function mountClassComponent(vdom) {
   const { type, props } = vdom;
   const classInstance = new type(props);
   const renderVdom = classInstance.render();
+  classInstance.oldRenderVDom = renderVdom;
   return createDom(renderVdom);
 }
 /**
@@ -64,6 +66,8 @@ function updateProps(dom, oldProps = {}, newProps = {}) {
       for (let attr in styleObj) {
         dom.style[attr] = styleObj[attr];
       }
+    } else if (/^on[A-Z]*/.test(key)) {
+      dom[key.toLowerCase()] = newProps[key];
     } else {
       dom[key] = newProps[key];
     }
@@ -77,6 +81,27 @@ function updateProps(dom, oldProps = {}, newProps = {}) {
     }
   }
 }
+
+export function findDOM(vDom) {
+  if (vDom.dom) {
+    return vDom.dom;
+  }
+  return findDOM(vDom.oldRenderVDom);
+}
+
+/**
+ * 替换了真实dom
+ * @param {*} parentDOM
+ * @param {*} oldVDOM
+ * @param {*} newVDOM
+ */
+export function compareTwoVdom(parentDOM, oldVDOM, newVDOM) {
+  const oldDom = findDOM(oldVDOM);
+  const newDOM = createDom(newVDOM);
+  parentDOM.removeChild(oldDom);
+  parentDOM.appendChild(newDOM);
+}
+
 function reconcileChildren(childrenVdom, parentDOM) {
   for (let i = 0; i < childrenVdom.length; i++) {
     mount(childrenVdom[i], parentDOM);
