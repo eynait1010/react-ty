@@ -18,6 +18,9 @@ function createDom(vdom) {
   if (type === REACT_TEXT) {
     dom = document.createTextNode(props);
   } else if (typeof type === "function") {
+    if (type.isReactComponent) {
+      return mountClassComponent(vdom);
+    }
     return mountFunctionComponent(vdom);
   } else {
     dom = document.createElement(type);
@@ -40,6 +43,18 @@ function mountFunctionComponent(vdom) {
   return createDom(renderVdom);
 }
 
+function mountClassComponent(vdom) {
+  const { type, props } = vdom;
+  const classInstance = new type(props);
+  const renderVdom = classInstance.render();
+  return createDom(renderVdom);
+}
+/**
+ * 把虚拟dom的属性挂在dom上
+ * @param {*} dom
+ * @param {*} oldProps
+ * @param {*} newProps
+ */
 function updateProps(dom, oldProps = {}, newProps = {}) {
   for (let key in newProps) {
     if (key === "children") {
