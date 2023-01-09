@@ -1,4 +1,17 @@
 import { compareTwoVdom, findDOM } from "./react-dom";
+
+export const updateQueue = {
+  isBatchingUpdate: false,
+  updaters: new Set(),
+  batchUpdate() {
+    for (let update of updateQueue.updaters) {
+      update.updateComponent();
+    }
+    updateQueue.updaters.clear();
+    updateQueue.isBatchingUpdate = false;
+  },
+};
+
 class Updater {
   constructor(classInstance) {
     this.classInstance = classInstance;
@@ -9,7 +22,11 @@ class Updater {
     this.emitUpdate();
   }
   emitUpdate() {
-    this.updateComponent();
+    if (updateQueue.isBatchingUpdate) {
+      updateQueue.updaters.add(this);
+    } else {
+      this.updateComponent();
+    }
   }
   updateComponent() {
     const { classInstance, pendingStates } = this;
@@ -45,7 +62,6 @@ export class Component {
     this.updater = new Updater(this);
   }
   setState(partialState) {
-    debugger;
     this.updater.addState(partialState);
   }
   forceUpdate() {
